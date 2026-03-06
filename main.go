@@ -3,6 +3,7 @@ package main
 import (
 "crypto/md5"
 "encoding/hex"
+"encoding/json"
 "fmt"
 "io"
 "log"
@@ -18,10 +19,11 @@ const (
 DataDir             = "hugo/content/posts"
 ProcessedHashesFile = "src/data/processed_hashes.txt"
 PnLFile             = "pnl_tracker.csv"
+LinksFile           = "src/data/links.json"
 )
 
 var rssFeeds = []string{
-"https://pubmed.ncbi.nlm.nih.gov/rss/search/1-y_L-7-8-9-10-11-12-13-14-15-16-17-18-19-20/", // Retrying with standard search RSS
+"https://pubmed.ncbi.nlm.nih.gov/rss/search/1-y_L-7-8-9-10-11-12-13-14-15-16-17-18-19-20/",
 "https://bmjdigitalhealth.bmj.com/rss/recent.xml",
 "https://www.sciencedaily.com/rss/health_medicine/artificial_intelligence.xml",
 "https://www.medgadget.com/category/artificial-intelligence/feed",
@@ -72,6 +74,17 @@ defer f.Close()
 fmt.Fprintln(f, h)
 }
 
+func loadLinks() map[string]string {
+links := make(map[string]string)
+content, err := os.ReadFile(LinksFile)
+if err != nil {
+log.Printf("Warning: Could not load links.json: %v", err)
+return links
+}
+json.Unmarshal(content, &links)
+return links
+}
+
 func fetchNews() []Article {
 fmt.Println("🚀 Scouting for news...")
 processedHashes := getProcessedHashes()
@@ -104,22 +117,34 @@ Hash:      urlHash,
 return newArticles
 }
 
-func generateMarkdown(article Article) string {
-// In production, this calls the LLM API
+func generateMarkdown(article Article, links map[string]string) string {
 apiCost := 0.00012
 logPnL(fmt.Sprintf("AI Summary: %s", article.Title), apiCost, 0)
 
+// Contextual Link Injection
+recommendedTool := ""
+for keyword, link := range links {
+if strings.Contains(strings.ToLower(article.Title), strings.ToLower(keyword)) || 
+   strings.Contains(strings.ToLower(article.Summary), strings.ToLower(keyword)) {
+recommendedTool = fmt.Sprintf("\n\n> **Recommended Resource:** Check out this [%s Tool/Course](%s) related to this breakthrough.", keyword, link)
+break // Only inject one link
+}
+}
+
 var sb strings.Builder
 sb.WriteString("---\n")
-sb.WriteString(fmt.Sprintf("title: \"%s\"\n", strings.ReplaceAll(article.Title, "\"", "'")))
+sb.WriteString(fmt.Sprintf("title: \\"%s\\"\n", strings.ReplaceAll(article.Title, "\\"", "'")))
 sb.WriteString(fmt.Sprintf("date: %s\n", time.Now().Format(time.RFC3339)))
-sb.WriteString(fmt.Sprintf("source_url: \"%s\"\n", article.URL))
+sb.WriteString(fmt.Sprintf("source_url: \\"%s\\"\n", article.URL)))
 sb.WriteString("---\n\n")
-sb.WriteString("### Summary\n")
-sb.WriteString("- **What happened:** [AI Summary Placeholder]\n")
-sb.WriteString("- **Why it matters:** [AI Analysis Placeholder]\n")
-sb.WriteString("- **Clinical Implication:** [AI Insight Placeholder]\n\n")
-sb.WriteString(fmt.Sprintf("*Read more at [Source](%s)*\n", article.URL))
+sb.WriteString("### Clinical Analysis\n")
+summary = article.Summary
+if len(summary) > 500: summary = summary[:500] + "..."
+sb.WriteString(fmt.Sprintf("\n%s\n\n", summary))
+sb.WriteString("- **Strategic Impact:** *Evaluating clinical significance in healthcare AI...*\n")
+sb.WriteString("- **Future Outlook:** *Awaiting further data validation and peer review...*\n")
+sb.WriteString(recommendedTool)
+sb.WriteString(fmt.Sprintf("\n\n*Read more at [Source](%s)*\n", article.URL))
 
 return sb.String()
 }
@@ -128,13 +153,16 @@ func main() {
 os.MkdirAll(DataDir, 0755)
 os.MkdirAll("src/data", 0755)
 
+links := loadLinks()
 articles := fetchNews()
 fmt.Printf("✅ Found %d new articles.\n", len(articles))
 
 count := 0
 for _, article := range articles {
-if count >= 5 { break }
-content := generateMarkdown(article)
+if count >= 5 {
+break
+}
+content := generateMarkdown(article, links)
 filename := filepath.Join(DataDir, article.Hash+".md")
 os.WriteFile(filename, []byte(content), 0644)
 saveHash(article.Hash)

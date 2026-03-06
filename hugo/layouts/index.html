@@ -1,0 +1,15 @@
+{{ define "main" }}
+  <main>
+    <section class="recent-posts">
+      <h2>Latest AI Insights</h2>
+      {{ range (where .Site.RegularPages "Section" "posts") }}
+        <article>
+          <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+          <div class="meta">Published on {{ .Date.Format "Jan 2, 2006" }}</div>
+          <p>{{ .Summary | truncate 250 }}</p>
+          <a href="{{ .RelPermalink }}">Read Analysis &rarr;</a>
+        </article>
+      {{ end }}
+    </section>
+  </main>
+{{ end }}

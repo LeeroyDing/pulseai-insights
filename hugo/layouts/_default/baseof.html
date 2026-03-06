@@ -5,13 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ .Title }} | PulseAI Insights</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 2rem; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 1100px; margin: 0 auto; padding: 2rem; }
         header { border-bottom: 2px solid #eee; margin-bottom: 2rem; padding-bottom: 1rem; }
         h1 { margin: 0; color: #007bff; }
         nav a { margin-right: 1rem; text-decoration: none; color: #666; }
+        .container { display: flex; gap: 2rem; }
+        main { flex: 3; }
+        aside { flex: 1; background: #f9f9f9; padding: 1.5rem; border-radius: 8px; border: 1px solid #eee; height: fit-content; }
+        .sidebar-widget { margin-bottom: 2rem; }
+        .sidebar-widget h3 { margin-top: 0; font-size: 1.1rem; border-bottom: 1px solid #ddd; padding-bottom: 0.5rem; }
+        .sidebar-widget ul { list-style: none; padding: 0; }
+        .sidebar-widget li { margin-bottom: 1rem; font-size: 0.9rem; }
+        .sidebar-widget a { color: #007bff; text-decoration: none; font-weight: bold; }
+        .sidebar-widget a:hover { text-decoration: underline; }
         article { margin-bottom: 3rem; }
         .meta { color: #888; font-size: 0.9rem; }
         footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid #eee; font-size: 0.8rem; color: #999; }
+        @media (max-width: 800px) { .container { flex-direction: column; } }
     </style>
 </head>
 <body>
@@ -20,9 +30,35 @@
         <p>Daily AI Developments in Healthcare</p>
         <nav><a href="/">Home</a></nav>
     </header>
-    <main>
-        {{ block "main" . }}{{ end }}
-    </main>
+    <div class="container">
+        <main>
+            {{ block "main" . }}{{ end }}
+        </main>
+        <aside>
+            <div class="sidebar-widget">
+                <h3>Top AI Medical Tools</h3>
+                <ul>
+                    <li>
+                        <a href="https://www.butterflynetwork.com/?utm_source=pulseai" target="_blank">Butterfly iQ3</a>
+                        <br><small>Handheld AI-powered ultrasound for clinical excellence.</small>
+                    </li>
+                    <li>
+                        <a href="https://www.ekohealth.com/products/digital-stethoscopes?aff=pulseai" target="_blank">Eko CORE 500™</a>
+                        <br><small>Digital stethoscope with integrated 3-lead ECG and AI.</small>
+                    </li>
+                    <li>
+                        <a href="https://www.coursera.org/specializations/ai-healthcare?utm_source=pulseai" target="_blank">AI in Healthcare</a>
+                        <br><small>Stanford University certification for clinicians.</small>
+                    </li>
+                </ul>
+            </div>
+            <div class="sidebar-widget">
+                <h3>Newsletter</h3>
+                <p><small>Get the weekly deep dive into clinical AI breakthroughs.</small></p>
+                <button style="width:100%; padding: 0.5rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Subscribe Free</button>
+            </div>
+        </aside>
+    </div>
     <footer>
         <p>&copy; {{ now.Format "2006" }} PulseAI Insights. AI-Curated Content. Not medical advice.</p>
     </footer>
