@@ -2,11 +2,15 @@ name: Daily AI News Update
 
 on:
   schedule:
-    - cron: '0 6 * * *' # Runs at 06:00 UTC every day
-  workflow_dispatch: # Allows manual triggering
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
-    permissions: write-all
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
@@ -26,7 +30,7 @@ jobs:
 
       - name: Run Scout & Editor Engine
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY: \{{ secrets.GEMINI_API_KEY }}
         run: go run main.go
 
       - name: Build Website
@@ -35,7 +39,7 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: \{{ secrets.GITHUB_TOKEN }}
           publish_dir: ./hugo/public
 
       - name: Commit P&L and Hash updates
