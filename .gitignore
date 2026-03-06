@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+node_modules/
+.npm/
+.git/
+.a0proj/secrets.env
+.a0proj/variables.env
+.hugo_build.lock
+hugo/public/

@@ -1,0 +1,46 @@
+name: Daily AI News Update
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Runs at 06:00 UTC every day
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Set up Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 'latest'
+          extended: true
+
+      - name: Run Scout & Editor Engine
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: go run main.go
+
+      - name: Build Website
+        run: cd hugo && hugo --minify
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./hugo/public
+
+      - name: Commit P&L and Hash updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add pnl_tracker.csv src/data/processed_hashes.txt
+          git commit -m "Update P&L and processed hashes [skip ci]" || echo "No changes to commit"
+          git push

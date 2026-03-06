@@ -1,0 +1,9 @@
+{{ define "main" }}
+    <article>
+        <h1>{{ .Title }}</h1>
+        <div class="meta">Published on {{ .Date.Format "Jan 2, 2006" }} | <a href="{{ .Params.source_url }}" target="_blank">Original Source</a></div>
+        <div class="content">
+            {{ .Content }}
+        </div>
+    </article>
+{{ end }}
